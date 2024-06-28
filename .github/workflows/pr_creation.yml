@@ -1,0 +1,30 @@
+name: Create PR with Github Action
+
+on:
+  push:
+    tags:
+      - "pr-*"
+
+jobs:
+  pr-creation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Create pull request
+        run: |
+          git config --global user.name "Atif Waheed"
+          git config --global user.email "theatifwaheed@gmail.com"
+          branch_name=$(git branch -r --contains $GITHUB_REF)
+          branch_name="${branch_name// /}"
+          branch_name=${branch_name:7}
+          echo "Branch Name is: $branch_name"
+          gh_pr_command="gh pr create -B master -H $branch_name --title \"pull_request: $branch_name\" --body \"Automatically created pull request\" -a \"mobiluse\" -r \"theatifwaheed\""
+          eval "$gh_pr_command"
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

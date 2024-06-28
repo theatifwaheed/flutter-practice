@@ -1,0 +1,88 @@
+name: Create JKS Keystore
+
+on:
+  push:
+    tags:
+      - "jks-*"
+
+jobs:
+  jks-creation:
+    runs-on: ubuntu-latest
+    outputs:
+      password: ${{ steps.set_password.outputs.password }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: "21.0.2" # Set the desired Java version
+          distribution: "adopt"
+
+      - name: Extract Password
+        id: set_password
+        run: echo "::set-output name=password::$(echo ${GITHUB_REF#refs/tags/jks-})"
+
+      - name: Create Keystore
+        run: |
+          # Extract the password from the tag and use it as both store and key password
+          password="${{ steps.set_password.outputs.password }}"
+          echo "$password"
+
+          # Generate the keystore with empty Distinguished Name (DN) and the provided password
+          keytool -genkeypair -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -storepass "$password" -keypass "$password" -validity 10000 -dname "CN=Your Name, OU=Your Org, O=Your Company, L=Your City, ST=Your State, C=Your Country" -alias upload
+
+          # Check if the keystore was generated successfully
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to generate the keystore."
+            exit 1
+          fi
+
+          # Create key.properties file with storePassword, keyPassword, and keyAlias
+          echo "storePassword=$password" > key.properties
+          echo "keyPassword=$password" >> key.properties
+          echo "keyAlias=upload" >> key.properties
+          echo "storeFile=upload-keystore.jks" >> key.properties
+
+      - name: Move Key Properties and JKS
+        run: |
+          mv upload-keystore.jks android/app/
+          mv key.properties android/
+
+      - name: Making Release Project
+        run: |
+          echo "KeyStore Import"
+          sed -i '/android {/i \
+          def keystoreProperties = new Properties()\n\
+          def keystorePropertiesFile = rootProject.file('"'"'key.properties'"'"')\n\
+          if (keystorePropertiesFile.exists()) {\n\
+              keystoreProperties.load(new FileInputStream(keystorePropertiesFile))\n\
+          }' android/app/build.gradle
+
+          echo "Signing Config"
+          sed -i '/buildTypes {/,/signingConfigs.debug/c\
+              signingConfigs {\
+                  release {\
+                      keyAlias keystoreProperties['\''keyAlias'\'']\
+                      keyPassword keystoreProperties['\''keyPassword'\'']\
+                      storeFile keystoreProperties['\''storeFile'\''] ? file(keystoreProperties['\''storeFile'\'']) : null\
+                      storePassword keystoreProperties['\''storePassword'\'']\
+                  }\
+              }\
+              buildTypes {\
+                  release {\
+                      signingConfig signingConfigs.release' android/app/build.gradle
+
+      - name: Commit and Push Keystore
+        run: |
+          git checkout -b jks-keystore-branch-${{ steps.set_password.outputs.password }}
+          git config --global user.name "Atif Waheed"
+          git config --global user.email "theatifwaheed@gmail.com"
+          cd android/
+          git add key.properties -f
+          git add app/upload-keystore.jks -f
+          git add .
+          git commit -m "jks and keystore"
+          git push --set-upstream origin jks-keystore-branch-${{ steps.set_password.outputs.password }}

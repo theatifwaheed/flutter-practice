@@ -1,0 +1,70 @@
+name: Create and Push Flutter Project
+on:
+  push:
+    tags:
+      - "flutter-*"
+
+jobs:
+  flutter_create_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract App Name
+        id: extract_app_name
+        run: echo "::set-output name=app_name::$(echo $GITHUB_REF | sed 's/^refs\/tags\/flutter-//')"
+
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Get Cache Flutter SDK and Dependencies
+        id: get-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            build/
+            android/.gradle/
+            /.pub-cache
+            /opt/hostedtoolcache/flutter/
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-checks-caches
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.19.6"
+          channel: "stable"
+
+      - name: Create Flutter Project
+        run: flutter create ${{ steps.extract_app_name.outputs.app_name }} --org com.tariq_pervez
+
+      - name: Post Cache Flutter SDK and Dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            build/
+            android/.gradle/
+            /.pub-cache
+            /opt/hostedtoolcache/flutter/
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-checks-caches
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "Atif Waheed"
+          git config --global user.email "theatifwaheed@gmail.com"
+
+      - name: Move Flutter Project Files
+        run: |
+          shopt -s dotglob
+          mv ${{ steps.extract_app_name.outputs.app_name }}/* .
+          rmdir ${{ steps.extract_app_name.outputs.app_name }}
+
+      - name: Commit and Push
+        run: |
+          git checkout -b feat/flutter-project-init-${{ steps.extract_app_name.outputs.app_name }}
+          git add .
+          git commit -m "Initial Project"
+          git push --set-upstream origin feat/flutter-project-init-${{ steps.extract_app_name.outputs.app_name }}
+          #          mv ${{ steps.extract_app_name.outputs.app_name }} flutter_project
