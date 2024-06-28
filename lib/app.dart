@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:practice/provider_practice/provider/counter_provider.dart';
+import 'package:provider/provider.dart';
+
+import 'provider_practice/screens/counter.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({
@@ -7,13 +11,36 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Practice Project',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (_) => CounterProvider(),
+      child: MaterialApp(
+        title: 'Practice Project',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const CounterScreenProvider(),
+        // home: const SizedBox(),
       ),
-      home: const SizedBox(),
     );
   }
 }
+
+/// Old
+// class MyApp extends StatelessWidget {
+//   const MyApp({
+//     super.key,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Practice Project',
+//       theme: ThemeData(
+//         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+//         useMaterial3: true,
+//       ),
+//       home: const SizedBox(),
+//     );
+//   }
+// }
