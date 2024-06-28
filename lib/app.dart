@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'provider_practice/screens/counter.dart';
 
+/// With Single Provider...
 class MyApp extends StatelessWidget {
   const MyApp({
     super.key,
