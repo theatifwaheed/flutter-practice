@@ -10,6 +10,7 @@ class CounterProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// This can be used to toggle Visibility of Eye on Password Field.
   ValueNotifier<int> counter = ValueNotifier<int>(0);
 
   void incrementCounter() => counter.value++;
