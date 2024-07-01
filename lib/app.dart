@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'provider_practice/screens/counter.dart';
 
-/// With Single Provider...
+/// With Multi-Provider...
 class MyApp extends StatelessWidget {
   const MyApp({
     super.key,
@@ -12,8 +12,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CounterProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => CounterProvider(),
+        ),
+      ],
       child: MaterialApp(
         title: 'Practice Project',
         theme: ThemeData(
@@ -26,6 +30,29 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+/// With Single Provider...
+// class MyApp extends StatelessWidget {
+//   const MyApp({
+//     super.key,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return ChangeNotifierProvider(
+//       create: (_) => CounterProvider(),
+//       child: MaterialApp(
+//         title: 'Practice Project',
+//         theme: ThemeData(
+//           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+//           useMaterial3: true,
+//         ),
+//         home: const CounterScreenProvider(),
+//         // home: const SizedBox(),
+//       ),
+//     );
+//   }
+// }
 
 /// Old
 // class MyApp extends StatelessWidget {
