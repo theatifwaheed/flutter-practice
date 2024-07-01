@@ -30,18 +30,19 @@ class CounterScreenProvider extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ValueListenableBuilder(
-              valueListenable: provider.counter,
-              builder: (ctx, value, child) {
-                return Center(
-                  child: Text(
-                    value.toString(),
-                    style: const TextStyle(
-                      fontSize: 30,
-                      color: Colors.black,
-                    ),
+            valueListenable: provider.counter,
+            builder: (ctx, value, child) {
+              return Center(
+                child: Text(
+                  value.toString(),
+                  style: const TextStyle(
+                    fontSize: 30,
+                    color: Colors.black,
                   ),
-                );
-              }),
+                ),
+              );
+            },
+          ),
           InkWell(
             onTap: () {
               provider.incrementCounter();
